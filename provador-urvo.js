@@ -1429,6 +1429,19 @@ setInterval(function(){var el=document.getElementById('q-step-error');if(!el)ret
             populateImageSelector();
             openModal();
         };
+        // 09/11/2026: o clique no selo nao pode chegar na galeria do tema (Horizon abre o zoom da foto
+        // escutando antes do botao). Intercepta na captura da janela e abre so o provador.
+        if (!window.__plSeloGuard) {
+            window.__plSeloGuard = true;
+            ['pointerdown', 'pointerup', 'mousedown', 'mouseup', 'touchstart', 'touchend', 'click'].forEach(function (t) {
+                window.addEventListener(t, function (e) {
+                    var s = e.target && e.target.closest && e.target.closest('.q-btn-trigger-ia');
+                    if (!s) return;
+                    e.stopPropagation();
+                    if (t === 'click') { e.preventDefault(); if (typeof s.onclick === 'function') s.onclick(e); }
+                }, true);
+            });
+        }
 
 
         closeBtn.onclick = () => closeModal();
