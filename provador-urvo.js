@@ -260,7 +260,7 @@ setInterval(function(){var el=document.getElementById('q-step-error');if(!el)ret
             visibility: hidden;
         }
         .q-btn-trigger-ia:hover { filter: drop-shadow(0 6px 18px rgba(0,0,0,0.32)); }
-        .q-btn-trigger-ia img { width: 100%; height: 100%; object-fit: contain; }
+        .q-btn-trigger-ia img { width: 100%; height: 100%; object-fit: contain; background: transparent !important; box-shadow: none !important; border: 0 !important; }
         @media (min-width: 768px) { .q-btn-trigger-ia { width: 70px; height: 70px; } }
 
         /* ── Inline button ── */
@@ -797,7 +797,7 @@ setInterval(function(){var el=document.getElementById('q-step-error');if(!el)ret
                     <!-- Persistent header (all steps) -->
                     <div id="q-header-provador">
                         <h1>Provador Virtual</h1>
-                        <span style="font-size:20px;letter-spacing:3px">URVO</span>
+                        <img src="https://lucasdecamargosilva.github.io/shopifyurvo/logo-urvo.png" alt="Urvo" style="height:26px;width:auto;display:block;margin:6px auto 0;background:transparent">
                     </div>
 
                     <!-- Main step -->
@@ -1946,14 +1946,16 @@ const fd = new FormData();
                         }
                     }
                 } catch (_) {}
-                    // Regra Urvo (herdada da Mionelle): envia todas as fotos do óculos no rosto como referências.
-                    if (!faceDetectPromise) startFaceDetect();
-                    // Aguarda a galeria inteira: não envia uma lista parcial após 9 segundos.
-                    await Promise.race([faceDetectPromise, new Promise(function (_, reject) {
-                        setTimeout(function () { reject(new Error('Tempo excedido ao analisar as referências.')); }, 30000);
-                    })]);
-
-                    allProdImgs = (_faceUrls && _faceUrls.length ? _faceUrls : allProdImgs).slice(0,20);
+                    // 09/11/2026 (Urvo): referências SÓ da galeria deste produto (/products/<handle>.js).
+                    // A regra de "fotos com rosto" da Mionelle pegava modelos de outros óculos nos banners da página.
+                    try {
+                        const _mh = location.pathname.match(/\/products\/([^\/?#]+)/);
+                        if (_mh) {
+                            const _pj = await fetch('/products/' + _mh[1] + '.js').then(r => r.json());
+                            const _imgs = (_pj.images || []).map(u => String(u).indexOf('//') === 0 ? 'https:' + u : String(u));
+                            if (_imgs.length) allProdImgs = _imgs.slice(0, 6);
+                        }
+                    } catch (_) {}
                 console.log('[PL Urvo] Enviando', allProdImgs.length, 'fotos do produto');
                     // ── Regra de fotos da frota (12/10/2026, Lucas) ─────────────────────────────
                     // VARIANTE SELECIONADA -> candidatas (foto da variante, grupo vizinho, fotos com rosto)
